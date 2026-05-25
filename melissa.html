@@ -1,0 +1,303 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; }
+
+  #app { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; overflow: hidden; }
+
+  .hearts-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+
+  .screen { display: none; flex-direction: column; align-items: center; gap: 1.2rem; z-index: 1; width: 100%; max-width: 540px; }
+  .screen.active { display: flex; }
+
+  .title { font-family: 'Pacifico', serif; font-size: 2rem; color: #c2185b; text-align: center; line-height: 1.3; }
+  .subtitle { font-size: 1rem; color: var(--color-text-secondary); text-align: center; }
+
+  .westie-row { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+
+  .btn-yes {
+    background: linear-gradient(135deg, #e91e8c, #c2185b);
+    color: white; border: none; border-radius: 50px; padding: 14px 40px;
+    font-size: 1.1rem; font-weight: 500; cursor: pointer; letter-spacing: 0.5px;
+    box-shadow: 0 4px 18px #e91e8c55; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-yes:hover { transform: scale(1.06); box-shadow: 0 6px 24px #e91e8c88; }
+  .btn-yes:active { transform: scale(0.97); }
+
+  .btn-no {
+    background: transparent; border: 1.5px solid #e0e0e0;
+    color: var(--color-text-tertiary); border-radius: 50px; padding: 10px 24px;
+    font-size: 0.85rem; cursor: pointer; transition: all 0.1s; position: absolute;
+    white-space: nowrap;
+  }
+  .btn-no:hover { font-size: 0.7rem; }
+
+  .no-container { position: relative; height: 60px; width: 100%; }
+
+  .destination-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .dest-card {
+    border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg);
+    padding: 14px 12px; cursor: pointer; background: var(--color-background-primary);
+    transition: border-color 0.2s, transform 0.15s; text-align: center;
+  }
+  .dest-card:hover { border-color: #e91e8c; transform: translateY(-2px); }
+  .dest-card .dest-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .dest-card .dest-name { font-size: 0.9rem; font-weight: 500; color: var(--color-text-primary); }
+  .dest-card .dest-diff { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 2px; }
+
+  .confetti-hearts { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+  .result-box {
+    background: #fce4ec; border-radius: var(--border-radius-lg); padding: 1.5rem;
+    text-align: center; border: 0.5px solid #f48fb1;
+  }
+  .result-title { font-family: 'Pacifico', serif; font-size: 1.5rem; color: #c2185b; }
+  .result-sub { font-size: 0.95rem; color: #880e4f; margin-top: 0.5rem; }
+
+  .floating-heart {
+    position: absolute; pointer-events: none; user-select: none; animation: floatUp 3s ease-in forwards;
+    font-size: 1.2rem;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-200px) scale(0.5) rotate(20deg); opacity: 0; }
+  }
+  .burst-heart {
+    position: fixed; pointer-events: none; animation: burst 1.8s ease-out forwards;
+    font-size: 1.6rem; z-index: 1000;
+  }
+  @keyframes burst {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+    60% { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0.8); opacity: 0; }
+  }
+</style>
+
+<div id="app">
+  <div class="hearts-bg" id="heartsBg"></div>
+
+  <!-- Screen 1: Domanda -->
+  <div class="screen active" id="screen1">
+    <div class="westie-row">
+      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="62" rx="28" ry="16" fill="#f5f0e8"/>
+        <ellipse cx="40" cy="46" rx="22" ry="20" fill="#f5f0e8"/>
+        <ellipse cx="28" cy="30" rx="10" ry="13" fill="#f5f0e8"/>
+        <ellipse cx="52" cy="30" rx="10" ry="13" fill="#f5f0e8"/>
+        <ellipse cx="40" cy="44" rx="19" ry="17" fill="#fafaf7"/>
+        <ellipse cx="33" cy="42" rx="5" ry="6" fill="#333" opacity="0.9"/>
+        <ellipse cx="47" cy="42" rx="5" ry="6" fill="#333" opacity="0.9"/>
+        <circle cx="33" cy="40" r="2.5" fill="white"/>
+        <circle cx="47" cy="40" r="2.5" fill="white"/>
+        <ellipse cx="40" cy="50" rx="6" ry="4" fill="#e8b4b8"/>
+        <ellipse cx="40" cy="52" rx="4" ry="2.5" fill="#d4849a"/>
+        <path d="M36 52 Q40 56 44 52" stroke="#d4849a" stroke-width="1.2" fill="none"/>
+        <ellipse cx="28" cy="25" rx="7" ry="10" fill="#ede8dc"/>
+        <ellipse cx="52" cy="25" rx="7" ry="10" fill="#ede8dc"/>
+      </svg>
+      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="63" rx="26" ry="14" fill="#ede8dc"/>
+        <ellipse cx="40" cy="47" rx="21" ry="19" fill="#ede8dc"/>
+        <ellipse cx="29" cy="31" rx="10" ry="12" fill="#ede8dc"/>
+        <ellipse cx="51" cy="31" rx="10" ry="12" fill="#ede8dc"/>
+        <ellipse cx="40" cy="45" rx="18" ry="16" fill="#fafaf7"/>
+        <ellipse cx="34" cy="43" rx="5" ry="6" fill="#222" opacity="0.85"/>
+        <ellipse cx="46" cy="43" rx="5" ry="6" fill="#222" opacity="0.85"/>
+        <circle cx="34" cy="41" r="2.5" fill="white"/>
+        <circle cx="46" cy="41" r="2.5" fill="white"/>
+        <ellipse cx="40" cy="51" rx="5.5" ry="3.5" fill="#e8a4b8"/>
+        <ellipse cx="40" cy="53" rx="3.5" ry="2" fill="#c4648a"/>
+        <path d="M36 53 Q40 57 44 53" stroke="#c4648a" stroke-width="1.2" fill="none"/>
+        <ellipse cx="29" cy="26" rx="7" ry="10" fill="#ddd8cc"/>
+        <ellipse cx="51" cy="26" rx="7" ry="10" fill="#ddd8cc"/>
+        <text x="38" y="78" font-size="12" fill="#e91e8c" text-anchor="middle">🐾</text>
+      </svg>
+    </div>
+
+    <div class="title">Melissa,<br>vieni in montagna con me? 🏔️</div>
+    <div class="subtitle">C'è aria fresca, panorami mozzafiato<br>e anche i westie vogliono che tu dica sì! 🐶</div>
+
+    <button class="btn-yes" onclick="sayYes()">💖 Sì, vengo!</button>
+
+    <div class="no-container">
+      <button class="btn-no" id="noBtn" onmouseover="runAway()" onclick="runAway()">No grazie</button>
+    </div>
+    <div style="font-size:0.75rem; color:var(--color-text-tertiary);">Il cane di destra ti guarda... scegli bene.</div>
+  </div>
+
+  <!-- Screen 2: Scelta destinazione -->
+  <div class="screen" id="screen2">
+    <div class="title" style="font-size:1.5rem;">Perfetto! Ora scegli dove andare 🎒</div>
+    <div class="subtitle">Trekking in provincia di Udine — solo i migliori per te</div>
+    <div class="destination-grid">
+      <div class="dest-card" onclick="chooseDest(this, 'Monte Lussari', '1789m — vista su tre paesi!')">
+        <div class="dest-icon">⛰️</div>
+        <div class="dest-name">Monte Lussari</div>
+        <div class="dest-diff">Facile • 3h • 1789 m</div>
+      </div>
+      <div class="dest-card" onclick="chooseDest(this, 'Lago di Fusine', 'Acque cristalline da favola')">
+        <div class="dest-icon">🏞️</div>
+        <div class="dest-name">Laghi di Fusine</div>
+        <div class="dest-diff">Facile • 2h • anello</div>
+      </div>
+      <div class="dest-card" onclick="chooseDest(this, 'Creta Grauzaria', 'La regina delle Carniche')">
+        <div class="dest-icon">🦅</div>
+        <div class="dest-name">Creta Grauzaria</div>
+        <div class="dest-diff">Difficile • 6h • 2064 m</div>
+      </div>
+      <div class="dest-card" onclick="chooseDest(this, 'Val Saisera', 'Valle segreta tra le Giulie')">
+        <div class="dest-icon">🌲</div>
+        <div class="dest-name">Val Saisera</div>
+        <div class="dest-diff">Media • 4h • natura pura</div>
+      </div>
+      <div class="dest-card" onclick="chooseDest(this, 'Monte Jôf Fuârt', 'Vetta leggendaria delle Giulie')">
+        <div class="dest-icon">🗻</div>
+        <div class="dest-name">Monte Jôf Fuârt</div>
+        <div class="dest-diff">Esperto • 7h • 2666 m</div>
+      </div>
+      <div class="dest-card" onclick="chooseDest(this, 'Passo Pramollo', 'Prati fioriti e rifugi accoglienti')">
+        <div class="dest-icon">🌸</div>
+        <div class="dest-name">Passo Pramollo</div>
+        <div class="dest-diff">Facile • 2.5h • panoramico</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Risultato -->
+  <div class="screen" id="screen3">
+    <div id="heartRain" class="confetti-hearts"></div>
+    <div class="westie-row">
+      <svg width="70" height="70" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="62" rx="28" ry="16" fill="#f5f0e8"/>
+        <ellipse cx="40" cy="46" rx="22" ry="20" fill="#fafaf7"/>
+        <ellipse cx="28" cy="30" rx="10" ry="13" fill="#ede8dc"/>
+        <ellipse cx="52" cy="30" rx="10" ry="13" fill="#ede8dc"/>
+        <ellipse cx="34" cy="42" rx="5" ry="6" fill="#333"/>
+        <ellipse cx="46" cy="42" rx="5" ry="6" fill="#333"/>
+        <circle cx="34" cy="40" r="2.5" fill="white"/>
+        <circle cx="46" cy="40" r="2.5" fill="white"/>
+        <ellipse cx="40" cy="51" rx="5.5" ry="3.5" fill="#e8b4b8"/>
+        <path d="M36 52 Q40 57 44 52" stroke="#d4849a" stroke-width="1.5" fill="none"/>
+        <text x="40" y="76" font-size="14" text-anchor="middle">💖</text>
+      </svg>
+    </div>
+    <div class="result-box" style="width:100%;">
+      <div class="result-title" id="resultTitle">Destinazione scelta!</div>
+      <div class="result-sub" id="resultSub"></div>
+      <div style="margin-top:1rem; font-size:2rem;" id="resultEmoji">🎉💕🏔️</div>
+    </div>
+    <div style="font-size:0.9rem; color:var(--color-text-secondary); text-align:center;">
+      I westie sono già pronti con il loro zaino 🐶🎒<br>
+      <span style="font-size:0.8rem; color:var(--color-text-tertiary);">Ci vediamo in cima! ❤️</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const noBtn = document.getElementById('noBtn');
+let noCount = 0;
+const noPhrases = ['No grazie','Forse no','Non credo','Dai smettila','No!','Assolutamente no','Nooo','Lasciami stare','Non me ne parlare','Impossibile','Giammai!'];
+
+function runAway() {
+  noCount++;
+  const container = noBtn.parentElement;
+  const cw = container.offsetWidth, bw = noBtn.offsetWidth, bh = noBtn.offsetHeight;
+  const maxX = cw - bw, maxY = container.offsetHeight - bh;
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
+  noBtn.style.fontSize = Math.max(0.55, 0.85 - noCount * 0.04) + 'rem';
+  if (noCount < noPhrases.length) noBtn.textContent = noPhrases[noCount];
+  if (noCount >= 10) { noBtn.style.opacity = '0'; noBtn.style.pointerEvents = 'none'; }
+  spawnFloatingHeart(noBtn);
+}
+
+function spawnFloatingHeart(el) {
+  const rect = el.getBoundingClientRect();
+  const appRect = document.getElementById('app').getBoundingClientRect();
+  const h = document.createElement('span');
+  h.className = 'floating-heart';
+  h.textContent = ['💕','💖','💗','💓','🌸','✨'][Math.floor(Math.random()*6)];
+  h.style.left = (rect.left - appRect.left + Math.random()*40) + 'px';
+  h.style.top = (rect.top - appRect.top) + 'px';
+  document.getElementById('app').appendChild(h);
+  setTimeout(() => h.remove(), 3100);
+}
+
+function sayYes() {
+  document.getElementById('screen1').classList.remove('active');
+  document.getElementById('screen2').classList.add('active');
+  launchBurstHearts();
+}
+
+function launchBurstHearts() {
+  const emojis = ['💖','💕','💗','💓','🌸','✨','🎀','💝'];
+  for (let i = 0; i < 22; i++) {
+    setTimeout(() => {
+      const h = document.createElement('span');
+      h.className = 'burst-heart';
+      const angle = Math.random() * 2 * Math.PI;
+      const dist = 80 + Math.random() * 180;
+      h.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+      h.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+      h.style.left = (30 + Math.random() * 40) + '%';
+      h.style.top = (20 + Math.random() * 60) + '%';
+      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1900);
+    }, i * 60);
+  }
+}
+
+function chooseDest(card, name, desc) {
+  document.getElementById('screen2').classList.remove('active');
+  document.getElementById('screen3').classList.add('active');
+  document.getElementById('resultTitle').textContent = '✨ ' + name + '! ✨';
+  document.getElementById('resultSub').textContent = desc + ' — non vedo l\'ora! 💕';
+  startHeartRain();
+}
+
+function startHeartRain() {
+  const container = document.getElementById('heartRain');
+  const emojis = ['💖','💗','💓','💕','🌸','✨','💝','🌺','🎀','💞'];
+  let count = 0;
+  const interval = setInterval(() => {
+    for (let i = 0; i < 4; i++) {
+      const h = document.createElement('span');
+      h.style.cssText = `
+        position: fixed; font-size: ${0.9 + Math.random()}rem; pointer-events:none;
+        left: ${Math.random()*100}vw; top: -2rem; z-index:9999;
+        animation: fallDown ${2.5 + Math.random()*2}s ease-in forwards;
+      `;
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 5000);
+    }
+    count++;
+    if (count > 40) clearInterval(interval);
+  }, 120);
+}
+
+const styleEl = document.createElement('style');
+styleEl.textContent = `
+@keyframes fallDown {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg) scale(0.6); opacity: 0; }
+}`;
+document.head.appendChild(styleEl);
+
+// Ambient floating hearts in background
+setInterval(() => {
+  const h = document.createElement('span');
+  h.className = 'floating-heart';
+  h.textContent = ['💕','💖','🌸','✨'][Math.floor(Math.random()*4)];
+  h.style.left = Math.random()*90 + '%';
+  h.style.top = (60 + Math.random()*30) + '%';
+  h.style.fontSize = (0.7 + Math.random()*0.6) + 'rem';
+  h.style.opacity = '0.5';
+  document.getElementById('app').appendChild(h);
+  setTimeout(() => h.remove(), 3100);
+}, 800);
+</script>
