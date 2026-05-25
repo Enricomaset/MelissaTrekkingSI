@@ -1,83 +1,58 @@
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: transparent; }
-
   #app { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; overflow: hidden; }
-
-  .hearts-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-
   .screen { display: none; flex-direction: column; align-items: center; gap: 1.2rem; z-index: 1; width: 100%; max-width: 540px; }
   .screen.active { display: flex; }
-
-  .title { font-family: 'Pacifico', serif; font-size: 2rem; color: #c2185b; text-align: center; line-height: 1.3; }
+  .title { font-size: 1.9rem; font-weight: 500; color: #c2185b; text-align: center; line-height: 1.3; font-family: Georgia, serif; }
   .subtitle { font-size: 1rem; color: var(--color-text-secondary); text-align: center; }
-
-  .westie-row { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
-
-  .btn-yes {
-    background: linear-gradient(135deg, #e91e8c, #c2185b);
-    color: white; border: none; border-radius: 50px; padding: 14px 40px;
-    font-size: 1.1rem; font-weight: 500; cursor: pointer; letter-spacing: 0.5px;
-    box-shadow: 0 4px 18px #e91e8c55; transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .btn-yes:hover { transform: scale(1.06); box-shadow: 0 6px 24px #e91e8c88; }
+  .westie-row { display: flex; gap: 1.5rem; justify-content: center; }
+  .btn-yes { background: #e91e8c; color: white; border: none; border-radius: 50px; padding: 14px 40px; font-size: 1.1rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
+  .btn-yes:hover { transform: scale(1.06); }
   .btn-yes:active { transform: scale(0.97); }
-
-  .btn-no {
-    background: transparent; border: 1.5px solid #e0e0e0;
-    color: var(--color-text-tertiary); border-radius: 50px; padding: 10px 24px;
-    font-size: 0.85rem; cursor: pointer; transition: all 0.1s; position: absolute;
-    white-space: nowrap;
-  }
-  .btn-no:hover { font-size: 0.7rem; }
-
+  .btn-no { background: transparent; border: 1px solid var(--color-border-tertiary); color: var(--color-text-tertiary); border-radius: 50px; padding: 10px 24px; font-size: 0.85rem; cursor: pointer; position: absolute; transition: all 0.1s; white-space: nowrap; }
   .no-container { position: relative; height: 60px; width: 100%; }
-
   .destination-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-  .dest-card {
-    border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg);
-    padding: 14px 12px; cursor: pointer; background: var(--color-background-primary);
-    transition: border-color 0.2s, transform 0.15s; text-align: center;
-  }
+  .dest-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 12px; cursor: pointer; background: var(--color-background-primary); transition: border-color 0.2s, transform 0.15s; text-align: center; }
   .dest-card:hover { border-color: #e91e8c; transform: translateY(-2px); }
-  .dest-card .dest-icon { font-size: 1.8rem; margin-bottom: 6px; }
-  .dest-card .dest-name { font-size: 0.9rem; font-weight: 500; color: var(--color-text-primary); }
-  .dest-card .dest-diff { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 2px; }
-
-  .confetti-hearts { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
-
-  .result-box {
-    background: #fce4ec; border-radius: var(--border-radius-lg); padding: 1.5rem;
-    text-align: center; border: 0.5px solid #f48fb1;
-  }
-  .result-title { font-family: 'Pacifico', serif; font-size: 1.5rem; color: #c2185b; }
+  .dest-card.selected { border: 2px solid #e91e8c; background: #fce4ec; }
+  .dest-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .dest-name { font-size: 0.9rem; font-weight: 500; color: var(--color-text-primary); }
+  .dest-diff { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 2px; }
+  .floating-heart { position: absolute; pointer-events: none; user-select: none; animation: floatUp 3s ease-in forwards; font-size: 1.2rem; }
+  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-200px) scale(0.5) rotate(20deg); opacity: 0; } }
+  .burst-heart { position: absolute; pointer-events: none; animation: burst 1.8s ease-out forwards; font-size: 1.6rem; z-index: 10; }
+  @keyframes burst { 0% { transform: translate(-50%,-50%) scale(0.2); opacity: 1; } 60% { opacity: 1; } 100% { transform: translate(var(--tx),var(--ty)) scale(0.8); opacity: 0; } }
+  .calendar-wrapper { width: 100%; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-nav { background: none; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); width: 32px; height: 32px; cursor: pointer; font-size: 1rem; color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center; }
+  .cal-nav:hover { background: var(--color-background-secondary); }
+  .cal-month-label { font-weight: 500; font-size: 1rem; color: var(--color-text-primary); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-name { text-align: center; font-size: 0.75rem; color: var(--color-text-tertiary); padding: 4px 0; font-weight: 500; }
+  .cal-day { text-align: center; padding: 8px 4px; font-size: 0.85rem; border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-primary); transition: background 0.15s; }
+  .cal-day:hover:not(.empty):not(.past) { background: #fce4ec; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past { color: var(--color-text-tertiary); cursor: not-allowed; }
+  .cal-day.selected { background: #e91e8c; color: white; font-weight: 500; }
+  .cal-day.today { border: 1px solid #e91e8c; }
+  .result-box { background: #fce4ec; border-radius: var(--border-radius-lg); padding: 1.5rem; text-align: center; border: 0.5px solid #f48fb1; width: 100%; }
+  .result-title { font-size: 1.5rem; font-weight: 500; color: #c2185b; font-family: Georgia, serif; }
   .result-sub { font-size: 0.95rem; color: #880e4f; margin-top: 0.5rem; }
-
-  .floating-heart {
-    position: absolute; pointer-events: none; user-select: none; animation: floatUp 3s ease-in forwards;
-    font-size: 1.2rem;
-  }
-  @keyframes floatUp {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-200px) scale(0.5) rotate(20deg); opacity: 0; }
-  }
-  .burst-heart {
-    position: fixed; pointer-events: none; animation: burst 1.8s ease-out forwards;
-    font-size: 1.6rem; z-index: 1000;
-  }
-  @keyframes burst {
-    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
-    60% { opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0.8); opacity: 0; }
-  }
+  .summary-card { width: 100%; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 0.9rem; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: var(--color-text-secondary); }
+  .summary-value { font-weight: 500; color: var(--color-text-primary); }
+  .mail-status { font-size: 0.85rem; padding: 10px 16px; border-radius: var(--border-radius-md); text-align: center; }
+  .mail-sending { background: var(--color-background-info); color: var(--color-text-info); }
+  .mail-sent { background: var(--color-background-success); color: var(--color-text-success); }
+  .mail-error { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .fall-heart { position: absolute; pointer-events: none; animation: fallDown 3.5s ease-in forwards; font-size: 1.3rem; }
+  @keyframes fallDown { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(600px) rotate(360deg); opacity: 0; } }
 </style>
 
 <div id="app">
-  <div class="hearts-bg" id="heartsBg"></div>
-
-  <!-- Screen 1: Domanda -->
   <div class="screen active" id="screen1">
     <div class="westie-row">
       <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -114,59 +89,69 @@
         <text x="38" y="78" font-size="12" fill="#e91e8c" text-anchor="middle">🐾</text>
       </svg>
     </div>
-
     <div class="title">Melissa,<br>vieni in montagna con me? 🏔️</div>
     <div class="subtitle">C'è aria fresca, panorami mozzafiato<br>e anche i westie vogliono che tu dica sì! 🐶</div>
-
     <button class="btn-yes" onclick="sayYes()">💖 Sì, vengo!</button>
-
     <div class="no-container">
       <button class="btn-no" id="noBtn" onmouseover="runAway()" onclick="runAway()">No grazie</button>
     </div>
     <div style="font-size:0.75rem; color:var(--color-text-tertiary);">Il cane di destra ti guarda... scegli bene.</div>
   </div>
 
-  <!-- Screen 2: Scelta destinazione -->
   <div class="screen" id="screen2">
-    <div class="title" style="font-size:1.5rem;">Perfetto! Ora scegli dove andare 🎒</div>
-    <div class="subtitle">Trekking in provincia di Udine — solo i migliori per te</div>
-    <div class="destination-grid">
-      <div class="dest-card" onclick="chooseDest(this, 'Monte Lussari', '1789m — vista su tre paesi!')">
+    <div class="title" style="font-size:1.5rem;">Perfetto! Scegli la destinazione 🎒</div>
+    <div class="subtitle">Trekking in provincia di Udine — i migliori per te</div>
+    <div class="destination-grid" id="destGrid">
+      <div class="dest-card" onclick="selectDest(this,'Monte Lussari','Facile • 3h • 1789 m','⛰️')">
         <div class="dest-icon">⛰️</div>
         <div class="dest-name">Monte Lussari</div>
         <div class="dest-diff">Facile • 3h • 1789 m</div>
       </div>
-      <div class="dest-card" onclick="chooseDest(this, 'Lago di Fusine', 'Acque cristalline da favola')">
+      <div class="dest-card" onclick="selectDest(this,'Laghi di Fusine','Facile • 2h • anello','🏞️')">
         <div class="dest-icon">🏞️</div>
         <div class="dest-name">Laghi di Fusine</div>
         <div class="dest-diff">Facile • 2h • anello</div>
       </div>
-      <div class="dest-card" onclick="chooseDest(this, 'Creta Grauzaria', 'La regina delle Carniche')">
+      <div class="dest-card" onclick="selectDest(this,'Creta Grauzaria','Difficile • 6h • 2064 m','🦅')">
         <div class="dest-icon">🦅</div>
         <div class="dest-name">Creta Grauzaria</div>
         <div class="dest-diff">Difficile • 6h • 2064 m</div>
       </div>
-      <div class="dest-card" onclick="chooseDest(this, 'Val Saisera', 'Valle segreta tra le Giulie')">
+      <div class="dest-card" onclick="selectDest(this,'Val Saisera','Media • 4h • natura pura','🌲')">
         <div class="dest-icon">🌲</div>
         <div class="dest-name">Val Saisera</div>
         <div class="dest-diff">Media • 4h • natura pura</div>
       </div>
-      <div class="dest-card" onclick="chooseDest(this, 'Monte Jôf Fuârt', 'Vetta leggendaria delle Giulie')">
+      <div class="dest-card" onclick="selectDest(this,'Monte Jôf Fuârt','Esperto • 7h • 2666 m','🗻')">
         <div class="dest-icon">🗻</div>
         <div class="dest-name">Monte Jôf Fuârt</div>
         <div class="dest-diff">Esperto • 7h • 2666 m</div>
       </div>
-      <div class="dest-card" onclick="chooseDest(this, 'Passo Pramollo', 'Prati fioriti e rifugi accoglienti')">
+      <div class="dest-card" onclick="selectDest(this,'Passo Pramollo','Facile • 2.5h • panoramico','🌸')">
         <div class="dest-icon">🌸</div>
         <div class="dest-name">Passo Pramollo</div>
         <div class="dest-diff">Facile • 2.5h • panoramico</div>
       </div>
     </div>
+    <button class="btn-yes" id="nextToDate" onclick="goToDate()" style="opacity:0.4;pointer-events:none;">Avanti — scegli la data 📅</button>
   </div>
 
-  <!-- Screen 3: Risultato -->
   <div class="screen" id="screen3">
-    <div id="heartRain" class="confetti-hearts"></div>
+    <div class="title" style="font-size:1.4rem;">Quando ci andiamo? 📅</div>
+    <div class="subtitle" id="dateSubtitle">Hai scelto: <span id="destLabel" style="color:#c2185b;font-weight:500;"></span></div>
+    <div class="calendar-wrapper">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="prevMonth()">‹</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div id="selectedDateDisplay" style="font-size:0.9rem; color:#c2185b; min-height:1.4rem; text-align:center;"></div>
+    <button class="btn-yes" id="confirmDateBtn" onclick="goToConfirm()" style="opacity:0.4;pointer-events:none;">Conferma e invia 💌</button>
+  </div>
+
+  <div class="screen" id="screen4">
     <div class="westie-row">
       <svg width="70" height="70" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="40" cy="62" rx="28" ry="16" fill="#f5f0e8"/>
@@ -182,14 +167,31 @@
         <text x="40" y="76" font-size="14" text-anchor="middle">💖</text>
       </svg>
     </div>
-    <div class="result-box" style="width:100%;">
-      <div class="result-title" id="resultTitle">Destinazione scelta!</div>
-      <div class="result-sub" id="resultSub"></div>
-      <div style="margin-top:1rem; font-size:2rem;" id="resultEmoji">🎉💕🏔️</div>
+    <div class="summary-card">
+      <div class="summary-row">
+        <span class="summary-label">🏔️ Destinazione</span>
+        <span class="summary-value" id="sumDest"></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">📅 Data</span>
+        <span class="summary-value" id="sumDate"></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">🐶 Partecipanti</span>
+        <span class="summary-value">Tu, me e i westie</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">💌 Conferma a</span>
+        <span class="summary-value" style="font-size:0.8rem;">enricomaset.em@gmail.com</span>
+      </div>
     </div>
-    <div style="font-size:0.9rem; color:var(--color-text-secondary); text-align:center;">
-      I westie sono già pronti con il loro zaino 🐶🎒<br>
-      <span style="font-size:0.8rem; color:var(--color-text-tertiary);">Ci vediamo in cima! ❤️</span>
+    <div id="mailStatus" class="mail-status mail-sending">
+      <i class="ti ti-send" style="margin-right:6px;"></i>Invio conferma in corso...
+    </div>
+    <div class="result-box" id="finalBox" style="display:none;">
+      <div class="result-title">È ufficiale! 💖</div>
+      <div class="result-sub" id="finalMsg"></div>
+      <div style="margin-top:1rem; font-size:2rem;">🎉💕🏔️🐶</div>
     </div>
   </div>
 </div>
@@ -198,16 +200,16 @@
 const noBtn = document.getElementById('noBtn');
 let noCount = 0;
 const noPhrases = ['No grazie','Forse no','Non credo','Dai smettila','No!','Assolutamente no','Nooo','Lasciami stare','Non me ne parlare','Impossibile','Giammai!'];
+let selectedDest = null, selectedDestInfo = null, selectedDate = null;
+let calYear, calMonth;
 
 function runAway() {
   noCount++;
   const container = noBtn.parentElement;
   const cw = container.offsetWidth, bw = noBtn.offsetWidth, bh = noBtn.offsetHeight;
-  const maxX = cw - bw, maxY = container.offsetHeight - bh;
-  const x = Math.random() * maxX;
-  const y = Math.random() * maxY;
-  noBtn.style.left = x + 'px';
-  noBtn.style.top = y + 'px';
+  const x = Math.random() * Math.max(0, cw - bw);
+  const y = Math.random() * Math.max(0, container.offsetHeight - bh);
+  noBtn.style.left = x + 'px'; noBtn.style.top = y + 'px';
   noBtn.style.fontSize = Math.max(0.55, 0.85 - noCount * 0.04) + 'rem';
   if (noCount < noPhrases.length) noBtn.textContent = noPhrases[noCount];
   if (noCount >= 10) { noBtn.style.opacity = '0'; noBtn.style.pointerEvents = 'none'; }
@@ -234,61 +236,152 @@ function sayYes() {
 
 function launchBurstHearts() {
   const emojis = ['💖','💕','💗','💓','🌸','✨','🎀','💝'];
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < 18; i++) {
     setTimeout(() => {
       const h = document.createElement('span');
       h.className = 'burst-heart';
       const angle = Math.random() * 2 * Math.PI;
-      const dist = 80 + Math.random() * 180;
-      h.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-      h.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-      h.style.left = (30 + Math.random() * 40) + '%';
-      h.style.top = (20 + Math.random() * 60) + '%';
-      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      document.body.appendChild(h);
+      const dist = 80 + Math.random() * 160;
+      h.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
+      h.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
+      h.style.left = (30 + Math.random()*40) + '%';
+      h.style.top = (20 + Math.random()*60) + '%';
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.getElementById('app').appendChild(h);
       setTimeout(() => h.remove(), 1900);
-    }, i * 60);
+    }, i * 70);
   }
 }
 
-function chooseDest(card, name, desc) {
+function selectDest(card, name, info, icon) {
+  document.querySelectorAll('.dest-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedDest = name; selectedDestInfo = info;
+  const btn = document.getElementById('nextToDate');
+  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+  launchBurstHearts();
+}
+
+function goToDate() {
+  if (!selectedDest) return;
   document.getElementById('screen2').classList.remove('active');
   document.getElementById('screen3').classList.add('active');
-  document.getElementById('resultTitle').textContent = '✨ ' + name + '! ✨';
-  document.getElementById('resultSub').textContent = desc + ' — non vedo l\'ora! 💕';
+  document.getElementById('destLabel').textContent = selectedDest;
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('calMonthLabel').textContent = months[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const days = ['Lu','Ma','Me','Gi','Ve','Sa','Do'];
+  days.forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el); });
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const offset = (firstDay === 0) ? 6 : firstDay - 1;
+  for (let i = 0; i < offset; i++) { const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el); }
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    const thisDate = new Date(calYear, calMonth, d);
+    if (thisDate < today) { el.classList.add('past'); }
+    else {
+      if (selectedDate && selectedDate.getFullYear()===calYear && selectedDate.getMonth()===calMonth && selectedDate.getDate()===d) el.classList.add('selected');
+      if (thisDate.toDateString()===today.toDateString()) el.classList.add('today');
+      el.onclick = () => pickDay(d, thisDate);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function pickDay(d, dateObj) {
+  selectedDate = dateObj;
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  const label = dateObj.toLocaleDateString('it-IT', opts);
+  document.getElementById('selectedDateDisplay').textContent = '📅 ' + label.charAt(0).toUpperCase() + label.slice(1);
+  const btn = document.getElementById('confirmDateBtn');
+  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+  renderCalendar();
+  launchBurstHearts();
+}
+
+function prevMonth() {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
+}
+function nextMonth() {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
+}
+
+function goToConfirm() {
+  if (!selectedDate) return;
+  document.getElementById('screen3').classList.remove('active');
+  document.getElementById('screen4').classList.add('active');
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  const dateLabel = selectedDate.toLocaleDateString('it-IT', opts);
+  document.getElementById('sumDest').textContent = selectedDest;
+  document.getElementById('sumDate').textContent = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+  document.getElementById('finalMsg').textContent = selectedDest + ' il ' + dateLabel + ' — non vedo l\'ora! 💕';
+  sendEmail(dateLabel);
   startHeartRain();
 }
 
+async function sendEmail(dateLabel) {
+  const subject = encodeURIComponent('💖 Melissa ha detto SÌ! Trekking confermato 🏔️');
+  const body = encodeURIComponent(
+    'Ciao Enrico! 🎉\n\n' +
+    'Melissa ha accettato il tuo invito in montagna!\n\n' +
+    '🏔️ Destinazione: ' + selectedDest + '\n' +
+    '📅 Data: ' + dateLabel + '\n' +
+    '🐶 Partecipanti: Enrico, Melissa e i westie\n\n' +
+    'Preparate gli zaini, è tutto confermato! 💕\n\n' +
+    '— Il vostro pianificatore di avventure romantiche 🌸'
+  );
+  const mailtoLink = 'mailto:enricomaset.em@gmail.com?subject=' + subject + '&body=' + body;
+
+  try {
+    const statusEl = document.getElementById('mailStatus');
+    statusEl.className = 'mail-status mail-sending';
+    statusEl.innerHTML = '<i class="ti ti-send" style="margin-right:6px;"></i>Apertura client email...';
+
+    await new Promise(r => setTimeout(r, 1200));
+
+    window.location.href = mailtoLink;
+
+    await new Promise(r => setTimeout(r, 800));
+    statusEl.className = 'mail-status mail-sent';
+    statusEl.innerHTML = '<i class="ti ti-check" style="margin-right:6px;"></i>Conferma pronta! Controlla il tuo client email 📬';
+    document.getElementById('finalBox').style.display = 'block';
+  } catch(e) {
+    const statusEl = document.getElementById('mailStatus');
+    statusEl.className = 'mail-status mail-error';
+    statusEl.innerHTML = '<i class="ti ti-alert-circle" style="margin-right:6px;"></i>Errore — riprova o manda tu la mail!';
+  }
+}
+
 function startHeartRain() {
-  const container = document.getElementById('heartRain');
   const emojis = ['💖','💗','💓','💕','🌸','✨','💝','🌺','🎀','💞'];
   let count = 0;
   const interval = setInterval(() => {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const h = document.createElement('span');
-      h.style.cssText = `
-        position: fixed; font-size: ${0.9 + Math.random()}rem; pointer-events:none;
-        left: ${Math.random()*100}vw; top: -2rem; z-index:9999;
-        animation: fallDown ${2.5 + Math.random()*2}s ease-in forwards;
-      `;
+      h.className = 'fall-heart';
+      h.style.left = Math.random()*95 + '%';
+      h.style.top = '-1.5rem';
+      h.style.animationDuration = (2.5 + Math.random()*2) + 's';
       h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-      document.body.appendChild(h);
+      document.getElementById('app').appendChild(h);
       setTimeout(() => h.remove(), 5000);
     }
     count++;
-    if (count > 40) clearInterval(interval);
-  }, 120);
+    if (count > 30) clearInterval(interval);
+  }, 150);
 }
 
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-@keyframes fallDown {
-  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(360deg) scale(0.6); opacity: 0; }
-}`;
-document.head.appendChild(styleEl);
-
-// Ambient floating hearts in background
 setInterval(() => {
   const h = document.createElement('span');
   h.className = 'floating-heart';
@@ -296,8 +389,8 @@ setInterval(() => {
   h.style.left = Math.random()*90 + '%';
   h.style.top = (60 + Math.random()*30) + '%';
   h.style.fontSize = (0.7 + Math.random()*0.6) + 'rem';
-  h.style.opacity = '0.5';
+  h.style.opacity = '0.45';
   document.getElementById('app').appendChild(h);
   setTimeout(() => h.remove(), 3100);
-}, 800);
+}, 900);
 </script>
