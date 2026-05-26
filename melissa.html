@@ -551,24 +551,34 @@ function goToConfirm() {
 
 function sendEmail(dateLabel) {
   const params = {
+    to_email:      'melissabrollo04@gmail.com',
+    destinazione:  selectedDest,
+    data_trekking: dateLabel,
+    dettagli:      selectedDestInfo
+  };
+
+  const params2 = {
     to_email:      'enricomaset.em@gmail.com',
     destinazione:  selectedDest,
     data_trekking: dateLabel,
     dettagli:      selectedDestInfo
   };
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-    .then(() => {
-      const el = document.getElementById('mailStatus');
-      el.className = 'status-box status-ok';
-      el.textContent = '✅ Email inviata con successo a enricomaset.em@gmail.com!';
-      document.getElementById('finalBox').style.display = 'block';
-    })
-    .catch(err => {
-      const el = document.getElementById('mailStatus');
-      el.className = 'status-box status-err';
-      el.textContent = '❌ Errore: ' + (err.text || JSON.stringify(err));
-      console.error(err);
-    });
+
+  Promise.all([
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params),
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params2)
+  ])
+  .then(() => {
+    const el = document.getElementById('mailStatus');
+    el.className = 'status-box status-ok';
+    el.textContent = '✅ Email inviate con successo a entrambi!';
+    document.getElementById('finalBox').style.display = 'block';
+  })
+  .catch(err => {
+    const el = document.getElementById('mailStatus');
+    el.className = 'status-box status-err';
+    el.textContent = '❌ Errore: ' + (err.text || JSON.stringify(err));
+  });
 }
 </script>
 </body>
