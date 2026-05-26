@@ -1,399 +1,575 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Melissa, vieni in montagna? 🏔️</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  #app { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; overflow: hidden; }
-  .screen { display: none; flex-direction: column; align-items: center; gap: 1.2rem; z-index: 1; width: 100%; max-width: 540px; }
-  .screen.active { display: flex; }
-  .title { font-size: 1.9rem; font-weight: 500; color: #c2185b; text-align: center; line-height: 1.3; font-family: Georgia, serif; }
-  .subtitle { font-size: 1rem; color: var(--color-text-secondary); text-align: center; }
-  .westie-row { display: flex; gap: 1.5rem; justify-content: center; }
-  .btn-yes { background: #e91e8c; color: white; border: none; border-radius: 50px; padding: 14px 40px; font-size: 1.1rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
-  .btn-yes:hover { transform: scale(1.06); }
-  .btn-yes:active { transform: scale(0.97); }
-  .btn-no { background: transparent; border: 1px solid var(--color-border-tertiary); color: var(--color-text-tertiary); border-radius: 50px; padding: 10px 24px; font-size: 0.85rem; cursor: pointer; position: absolute; transition: all 0.1s; white-space: nowrap; }
-  .no-container { position: relative; height: 60px; width: 100%; }
-  .destination-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-  .dest-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 12px; cursor: pointer; background: var(--color-background-primary); transition: border-color 0.2s, transform 0.15s; text-align: center; }
-  .dest-card:hover { border-color: #e91e8c; transform: translateY(-2px); }
-  .dest-card.selected { border: 2px solid #e91e8c; background: #fce4ec; }
-  .dest-icon { font-size: 1.8rem; margin-bottom: 6px; }
-  .dest-name { font-size: 0.9rem; font-weight: 500; color: var(--color-text-primary); }
-  .dest-diff { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 2px; }
-  .floating-heart { position: absolute; pointer-events: none; user-select: none; animation: floatUp 3s ease-in forwards; font-size: 1.2rem; }
-  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-200px) scale(0.5) rotate(20deg); opacity: 0; } }
-  .burst-heart { position: absolute; pointer-events: none; animation: burst 1.8s ease-out forwards; font-size: 1.6rem; z-index: 10; }
-  @keyframes burst { 0% { transform: translate(-50%,-50%) scale(0.2); opacity: 1; } 60% { opacity: 1; } 100% { transform: translate(var(--tx),var(--ty)) scale(0.8); opacity: 0; } }
-  .calendar-wrapper { width: 100%; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
-  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .cal-nav { background: none; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); width: 32px; height: 32px; cursor: pointer; font-size: 1rem; color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center; }
-  .cal-nav:hover { background: var(--color-background-secondary); }
-  .cal-month-label { font-weight: 500; font-size: 1rem; color: var(--color-text-primary); }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-day-name { text-align: center; font-size: 0.75rem; color: var(--color-text-tertiary); padding: 4px 0; font-weight: 500; }
-  .cal-day { text-align: center; padding: 8px 4px; font-size: 0.85rem; border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-primary); transition: background 0.15s; }
-  .cal-day:hover:not(.empty):not(.past) { background: #fce4ec; }
-  .cal-day.empty { cursor: default; }
-  .cal-day.past { color: var(--color-text-tertiary); cursor: not-allowed; }
-  .cal-day.selected { background: #e91e8c; color: white; font-weight: 500; }
-  .cal-day.today { border: 1px solid #e91e8c; }
-  .result-box { background: #fce4ec; border-radius: var(--border-radius-lg); padding: 1.5rem; text-align: center; border: 0.5px solid #f48fb1; width: 100%; }
-  .result-title { font-size: 1.5rem; font-weight: 500; color: #c2185b; font-family: Georgia, serif; }
-  .result-sub { font-size: 0.95rem; color: #880e4f; margin-top: 0.5rem; }
-  .summary-card { width: 100%; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
-  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 0.9rem; }
-  .summary-row:last-child { border-bottom: none; }
-  .summary-label { color: var(--color-text-secondary); }
-  .summary-value { font-weight: 500; color: var(--color-text-primary); }
-  .mail-status { font-size: 0.85rem; padding: 10px 16px; border-radius: var(--border-radius-md); text-align: center; }
-  .mail-sending { background: var(--color-background-info); color: var(--color-text-info); }
-  .mail-sent { background: var(--color-background-success); color: var(--color-text-success); }
-  .mail-error { background: var(--color-background-danger); color: var(--color-text-danger); }
-  .fall-heart { position: absolute; pointer-events: none; animation: fallDown 3.5s ease-in forwards; font-size: 1.3rem; }
-  @keyframes fallDown { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(600px) rotate(360deg); opacity: 0; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  min-height: 100vh;
+  background: #fff9fb;
+  display: flex; align-items: flex-start; justify-content: center;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%; max-width: 580px;
+  padding: 2.5rem 1.5rem 4rem;
+  position: relative;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; flex-direction: column; align-items: center; gap: 1.6rem; animation: fadeIn 0.5s ease; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+
+/* ── HEADER DECORATIVO ── */
+.page-header {
+  width: 100%; text-align: center; padding: 1.8rem 1rem 1rem;
+  border-bottom: 1px solid #fce4ec; margin-bottom: 0.5rem;
+}
+.page-header .subtitle-top {
+  font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase;
+  color: #e91e8c; font-weight: 700; margin-bottom: 0.5rem;
+}
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem; color: #2d1b2e; line-height: 1.2;
+}
+.page-header h1 em { color: #e91e8c; font-style: italic; }
+.page-header p { font-size: 0.95rem; color: #a07090; margin-top: 0.6rem; font-weight: 300; }
+
+/* ── CARD ── */
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.8rem;
+  box-shadow: 0 2px 24px rgba(200,50,120,0.08);
+  width: 100%;
+  border: 1px solid #fce4ec;
+}
+
+/* ── BUTTONS ── */
+.btn-yes {
+  background: linear-gradient(135deg, #e91e8c 0%, #c2185b 100%);
+  color: white; border: none; border-radius: 50px;
+  padding: 15px 48px; font-size: 1.05rem; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.5px;
+  box-shadow: 0 4px 20px rgba(233,30,140,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: 'Lato', sans-serif;
+}
+.btn-yes:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 7px 28px rgba(233,30,140,0.45); }
+.btn-yes:active { transform: scale(0.97); }
+.btn-yes:disabled { opacity: 0.35; pointer-events: none; transform: none; box-shadow: none; }
+
+.btn-no {
+  background: transparent; border: 1.5px solid #f0c0d0;
+  color: #d4849a; border-radius: 50px; padding: 9px 26px;
+  font-size: 0.85rem; cursor: pointer; position: absolute;
+  white-space: nowrap; font-family: 'Lato', sans-serif;
+  transition: opacity 0.15s;
+}
+.no-container { position: relative; height: 60px; width: 100%; }
+
+/* ── DESTINAZIONI ── */
+.destination-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.dest-card {
+  border: 1.5px solid #fce4ec; border-radius: 16px; padding: 16px 10px;
+  cursor: pointer; background: white; text-align: center;
+  transition: all 0.2s; position: relative; overflow: hidden;
+}
+.dest-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #fce4ec 0%, #fff0f5 100%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.dest-card:hover::before { opacity: 1; }
+.dest-card:hover { border-color: #e91e8c; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(233,30,140,0.12); }
+.dest-card.selected { border-color: #e91e8c; background: #fff0f5; box-shadow: 0 4px 16px rgba(233,30,140,0.2); }
+.dest-icon { font-size: 2rem; margin-bottom: 8px; position: relative; }
+.dest-name { font-size: 0.88rem; font-weight: 700; color: #2d1b2e; position: relative; }
+.dest-diff { font-size: 0.72rem; color: #b07090; margin-top: 4px; position: relative; font-weight: 300; }
+
+/* ── CALENDARIO ── */
+.cal-wrapper { width: 100%; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.cal-nav {
+  background: none; border: 1.5px solid #fce4ec; border-radius: 10px;
+  width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem;
+  color: #e91e8c; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.cal-nav:hover { background: #fce4ec; }
+.cal-month { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #2d1b2e; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-dname { text-align: center; font-size: 0.7rem; color: #c4a0b0; padding: 4px 0; font-weight: 700; letter-spacing: 0.5px; }
+.cal-day {
+  text-align: center; padding: 9px 3px; font-size: 0.82rem;
+  border-radius: 10px; cursor: pointer; color: #2d1b2e; transition: background 0.12s;
+}
+.cal-day:hover:not(.empty):not(.past) { background: #fce4ec; color: #c2185b; }
+.cal-day.empty { cursor: default; }
+.cal-day.past { color: #e0ccd0; cursor: not-allowed; }
+.cal-day.today { border: 2px solid #e91e8c; color: #e91e8c; font-weight: 700; }
+.cal-day.selected { background: #e91e8c; color: white; font-weight: 700; border: none; }
+
+/* ── SUMMARY ── */
+.summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid #fce4ec; font-size: 0.9rem;
+}
+.summary-row:last-child { border-bottom: none; }
+.slabel { color: #b07090; font-weight: 300; }
+.svalue { font-weight: 700; color: #2d1b2e; }
+
+/* ── STATUS MAIL ── */
+.status-box {
+  width: 100%; padding: 13px 18px; border-radius: 14px;
+  text-align: center; font-size: 0.9rem; font-weight: 600;
+}
+.status-sending { background: #e3f2fd; color: #1565c0; }
+.status-ok { background: #e8f5e9; color: #2e7d32; }
+.status-err { background: #ffebee; color: #c62828; }
+
+/* ── SECTION TITLES ── */
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; color: #2d1b2e; text-align: center;
+}
+.section-title em { color: #e91e8c; font-style: italic; }
+.section-sub { font-size: 0.88rem; color: #a07090; text-align: center; font-weight: 300; }
+
+/* ── BADGE MELISSA ── */
+.melissa-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff0f5; border: 1px solid #f8bbd0;
+  border-radius: 50px; padding: 6px 16px;
+  font-size: 0.8rem; color: #c2185b; font-weight: 700; letter-spacing: 0.5px;
+}
+
+/* ── HEARTS ── */
+.floating { position: fixed; pointer-events: none; z-index: 9998; animation: floatup 3s ease-in forwards; }
+@keyframes floatup { 0%{transform:translateY(0) scale(1);opacity:1;} 100%{transform:translateY(-260px) scale(0.4) rotate(20deg);opacity:0;} }
+.falling { position: fixed; pointer-events: none; z-index: 9998; animation: falldown var(--dur,3s) ease-in forwards; }
+@keyframes falldown { 0%{transform:translateY(-20px) rotate(0);opacity:1;} 100%{transform:translateY(110vh) rotate(380deg);opacity:0;} }
+.burst { position: fixed; pointer-events: none; z-index: 9999; animation: burstout 1.8s ease-out forwards; }
+@keyframes burstout { 0%{transform:translate(-50%,-50%) scale(0.1);opacity:1;} 60%{opacity:0.9;} 100%{transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(0.9);opacity:0;} }
+
+/* ── FINAL BOX ── */
+.final-box {
+  width: 100%; background: linear-gradient(135deg, #fff0f5, #fce4ec);
+  border: 1px solid #f8bbd0; border-radius: 20px; padding: 2rem;
+  text-align: center;
+}
+.final-box h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #c2185b; }
+.final-box p { font-size: 0.95rem; color: #880e4f; margin-top: 0.5rem; font-weight: 300; }
+
+/* ── PASTICCERIA DECO ── */
+.deco-strip {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  font-size: 1.4rem; opacity: 0.7;
+}
 </style>
-
+</head>
+<body>
 <div id="app">
-  <div class="screen active" id="screen1">
-    <div class="westie-row">
-      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="40" cy="62" rx="28" ry="16" fill="#f5f0e8"/>
-        <ellipse cx="40" cy="46" rx="22" ry="20" fill="#f5f0e8"/>
-        <ellipse cx="28" cy="30" rx="10" ry="13" fill="#f5f0e8"/>
-        <ellipse cx="52" cy="30" rx="10" ry="13" fill="#f5f0e8"/>
-        <ellipse cx="40" cy="44" rx="19" ry="17" fill="#fafaf7"/>
-        <ellipse cx="33" cy="42" rx="5" ry="6" fill="#333" opacity="0.9"/>
-        <ellipse cx="47" cy="42" rx="5" ry="6" fill="#333" opacity="0.9"/>
-        <circle cx="33" cy="40" r="2.5" fill="white"/>
-        <circle cx="47" cy="40" r="2.5" fill="white"/>
-        <ellipse cx="40" cy="50" rx="6" ry="4" fill="#e8b4b8"/>
-        <ellipse cx="40" cy="52" rx="4" ry="2.5" fill="#d4849a"/>
-        <path d="M36 52 Q40 56 44 52" stroke="#d4849a" stroke-width="1.2" fill="none"/>
-        <ellipse cx="28" cy="25" rx="7" ry="10" fill="#ede8dc"/>
-        <ellipse cx="52" cy="25" rx="7" ry="10" fill="#ede8dc"/>
-      </svg>
-      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="40" cy="63" rx="26" ry="14" fill="#ede8dc"/>
-        <ellipse cx="40" cy="47" rx="21" ry="19" fill="#ede8dc"/>
-        <ellipse cx="29" cy="31" rx="10" ry="12" fill="#ede8dc"/>
-        <ellipse cx="51" cy="31" rx="10" ry="12" fill="#ede8dc"/>
-        <ellipse cx="40" cy="45" rx="18" ry="16" fill="#fafaf7"/>
-        <ellipse cx="34" cy="43" rx="5" ry="6" fill="#222" opacity="0.85"/>
-        <ellipse cx="46" cy="43" rx="5" ry="6" fill="#222" opacity="0.85"/>
-        <circle cx="34" cy="41" r="2.5" fill="white"/>
-        <circle cx="46" cy="41" r="2.5" fill="white"/>
-        <ellipse cx="40" cy="51" rx="5.5" ry="3.5" fill="#e8a4b8"/>
-        <ellipse cx="40" cy="53" rx="3.5" ry="2" fill="#c4648a"/>
-        <path d="M36 53 Q40 57 44 53" stroke="#c4648a" stroke-width="1.2" fill="none"/>
-        <ellipse cx="29" cy="26" rx="7" ry="10" fill="#ddd8cc"/>
-        <ellipse cx="51" cy="26" rx="7" ry="10" fill="#ddd8cc"/>
-        <text x="38" y="78" font-size="12" fill="#e91e8c" text-anchor="middle">🐾</text>
-      </svg>
-    </div>
-    <div class="title">Melissa,<br>vieni in montagna con me? 🏔️</div>
-    <div class="subtitle">C'è aria fresca, panorami mozzafiato<br>e anche i westie vogliono che tu dica sì! 🐶</div>
-    <button class="btn-yes" onclick="sayYes()">💖 Sì, vengo!</button>
-    <div class="no-container">
-      <button class="btn-no" id="noBtn" onmouseover="runAway()" onclick="runAway()">No grazie</button>
-    </div>
-    <div style="font-size:0.75rem; color:var(--color-text-tertiary);">Il cane di destra ti guarda... scegli bene.</div>
+
+<!-- ══════════════════ SCREEN 1 ══════════════════ -->
+<div class="screen active" id="s1">
+
+  <div class="page-header" style="width:100%;">
+    <div class="subtitle-top">Una proposta speciale 🌸</div>
+    <h1>Cara <em>Melissa</em>,<br>vieni in montagna con me?</h1>
+    <p>Aria fresca, sentieri tra le Alpi Carniche<br>e un westie pronto all'avventura 🐾</p>
   </div>
 
-  <div class="screen" id="screen2">
-    <div class="title" style="font-size:1.5rem;">Perfetto! Scegli la destinazione 🎒</div>
-    <div class="subtitle">Trekking in provincia di Udine — i migliori per te</div>
-    <div class="destination-grid" id="destGrid">
-      <div class="dest-card" onclick="selectDest(this,'Monte Lussari','Facile • 3h • 1789 m','⛰️')">
-        <div class="dest-icon">⛰️</div>
-        <div class="dest-name">Monte Lussari</div>
-        <div class="dest-diff">Facile • 3h • 1789 m</div>
-      </div>
-      <div class="dest-card" onclick="selectDest(this,'Laghi di Fusine','Facile • 2h • anello','🏞️')">
-        <div class="dest-icon">🏞️</div>
-        <div class="dest-name">Laghi di Fusine</div>
-        <div class="dest-diff">Facile • 2h • anello</div>
-      </div>
-      <div class="dest-card" onclick="selectDest(this,'Creta Grauzaria','Difficile • 6h • 2064 m','🦅')">
-        <div class="dest-icon">🦅</div>
-        <div class="dest-name">Creta Grauzaria</div>
-        <div class="dest-diff">Difficile • 6h • 2064 m</div>
-      </div>
-      <div class="dest-card" onclick="selectDest(this,'Val Saisera','Media • 4h • natura pura','🌲')">
-        <div class="dest-icon">🌲</div>
-        <div class="dest-name">Val Saisera</div>
-        <div class="dest-diff">Media • 4h • natura pura</div>
-      </div>
-      <div class="dest-card" onclick="selectDest(this,'Monte Jôf Fuârt','Esperto • 7h • 2666 m','🗻')">
-        <div class="dest-icon">🗻</div>
-        <div class="dest-name">Monte Jôf Fuârt</div>
-        <div class="dest-diff">Esperto • 7h • 2666 m</div>
-      </div>
-      <div class="dest-card" onclick="selectDest(this,'Passo Pramollo','Facile • 2.5h • panoramico','🌸')">
-        <div class="dest-icon">🌸</div>
-        <div class="dest-name">Passo Pramollo</div>
-        <div class="dest-diff">Facile • 2.5h • panoramico</div>
-      </div>
+  <!-- WESTIE SVG MIGLIORATO -->
+  <div style="display:flex; gap:2rem; justify-content:center; align-items:flex-end; margin: 0.5rem 0;">
+
+    <!-- Westie principale con cuore -->
+    <svg width="130" height="140" viewBox="0 0 130 140" xmlns="http://www.w3.org/2000/svg">
+      <!-- corpo -->
+      <ellipse cx="65" cy="108" rx="40" ry="26" fill="#f0ebe0"/>
+      <!-- zampe -->
+      <rect x="34" y="124" width="14" height="18" rx="7" fill="#e8e0d0"/>
+      <rect x="52" y="126" width="13" height="16" rx="6.5" fill="#e8e0d0"/>
+      <rect x="68" y="126" width="13" height="16" rx="6.5" fill="#e8e0d0"/>
+      <rect x="84" y="124" width="14" height="18" rx="7" fill="#e8e0d0"/>
+      <!-- unghiette -->
+      <ellipse cx="38" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <ellipse cx="47" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <ellipse cx="57" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <ellipse cx="73" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <ellipse cx="83" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <ellipse cx="92" cy="141" rx="3" ry="2" fill="#d4c8b8"/>
+      <!-- testa -->
+      <ellipse cx="65" cy="72" rx="32" ry="30" fill="#f0ebe0"/>
+      <!-- pelo testina top -->
+      <ellipse cx="65" cy="46" rx="30" ry="18" fill="#e8e3d4"/>
+      <ellipse cx="48" cy="50" rx="14" ry="22" fill="#e8e3d4"/>
+      <ellipse cx="82" cy="50" rx="14" ry="22" fill="#e8e3d4"/>
+      <!-- inner testa -->
+      <ellipse cx="65" cy="75" rx="26" ry="24" fill="#fafaf5"/>
+      <!-- orecchie interne -->
+      <ellipse cx="48" cy="52" rx="9" ry="16" fill="#ddd8c8"/>
+      <ellipse cx="82" cy="52" rx="9" ry="16" fill="#ddd8c8"/>
+      <!-- occhi -->
+      <ellipse cx="54" cy="70" rx="7" ry="8" fill="#1a1008"/>
+      <ellipse cx="76" cy="70" rx="7" ry="8" fill="#1a1008"/>
+      <!-- riflesso occhi -->
+      <circle cx="51" cy="67" r="2.5" fill="white" opacity="0.9"/>
+      <circle cx="73" cy="67" r="2.5" fill="white" opacity="0.9"/>
+      <circle cx="56" cy="73" r="1" fill="white" opacity="0.5"/>
+      <circle cx="78" cy="73" r="1" fill="white" opacity="0.5"/>
+      <!-- naso -->
+      <ellipse cx="65" cy="82" rx="7" ry="5" fill="#1a0808"/>
+      <ellipse cx="63" cy="80" rx="2" ry="1.5" fill="white" opacity="0.4"/>
+      <!-- bocca sorriso -->
+      <path d="M57 88 Q65 96 73 88" stroke="#c4849a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- linguina -->
+      <ellipse cx="65" cy="94" rx="5" ry="3.5" fill="#e8748a"/>
+      <!-- coda -->
+      <path d="M105 100 Q128 80 120 65 Q115 55 108 68" stroke="#e8e3d4" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <!-- collare rosa -->
+      <rect x="42" y="96" width="46" height="9" rx="4.5" fill="#e91e8c" opacity="0.85"/>
+      <ellipse cx="65" cy="100" rx="5" ry="5" fill="#ffd700" opacity="0.9"/>
+      <text x="63" y="103" font-size="6" fill="#2d1b2e" font-weight="bold">M</text>
+      <!-- pelo barba -->
+      <ellipse cx="65" cy="90" rx="20" ry="10" fill="#fafaf5" opacity="0.6"/>
+    </svg>
+
+    <!-- Cuore con testo -->
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding-bottom:1rem;">
+      <div style="font-size:2.8rem; animation: pulse 1.4s ease-in-out infinite;">💖</div>
+      <div style="font-size:0.7rem; color:#e91e8c; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Woof!</div>
     </div>
-    <button class="btn-yes" id="nextToDate" onclick="goToDate()" style="opacity:0.4;pointer-events:none;">Avanti — scegli la data 📅</button>
   </div>
 
-  <div class="screen" id="screen3">
-    <div class="title" style="font-size:1.4rem;">Quando ci andiamo? 📅</div>
-    <div class="subtitle" id="dateSubtitle">Hai scelto: <span id="destLabel" style="color:#c2185b;font-weight:500;"></span></div>
-    <div class="calendar-wrapper">
+  <style>@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }</style>
+
+  <div class="melissa-badge">🍰 Per la pasticciera più dolce delle Alpi</div>
+
+  <div class="deco-strip">🧁 🏔️ 🐾 🌸 🎂 ⛰️ 🍪</div>
+
+  <button class="btn-yes" onclick="sayYes()">💖 Sì, vengo con te!</button>
+
+  <div class="no-container">
+    <button class="btn-no" id="noBtn" onmouseover="runAway()" onclick="runAway()">No grazie</button>
+  </div>
+
+  <p style="font-size:0.72rem; color:#d4a0b0; text-align:center;">Il westie ti sta guardando... scegli con saggezza 🐾</p>
+</div>
+
+
+<!-- ══════════════════ SCREEN 2 ══════════════════ -->
+<div class="screen" id="s2">
+  <div class="section-title">Scegli la tua <em>avventura</em> 🎒</div>
+  <p class="section-sub">I migliori trekking in provincia di Udine — selezionati con cura</p>
+
+  <div class="destination-grid">
+    <div class="dest-card" onclick="selectDest(this,'Monte Lussari','Facile • 3h • 1789 m')">
+      <div class="dest-icon">⛰️</div>
+      <div class="dest-name">Monte Lussari</div>
+      <div class="dest-diff">Facile • 3h • 1789 m</div>
+    </div>
+    <div class="dest-card" onclick="selectDest(this,'Laghi di Fusine','Facile • 2h • anello')">
+      <div class="dest-icon">🏞️</div>
+      <div class="dest-name">Laghi di Fusine</div>
+      <div class="dest-diff">Facile • 2h • anello</div>
+    </div>
+    <div class="dest-card" onclick="selectDest(this,'Creta Grauzaria','Difficile • 6h • 2064 m')">
+      <div class="dest-icon">🦅</div>
+      <div class="dest-name">Creta Grauzaria</div>
+      <div class="dest-diff">Difficile • 6h • 2064 m</div>
+    </div>
+    <div class="dest-card" onclick="selectDest(this,'Val Saisera','Media • 4h • natura pura')">
+      <div class="dest-icon">🌲</div>
+      <div class="dest-name">Val Saisera</div>
+      <div class="dest-diff">Media • 4h • natura pura</div>
+    </div>
+    <div class="dest-card" onclick="selectDest(this,'Monte Jôf Fuârt','Esperto • 7h • 2666 m')">
+      <div class="dest-icon">🗻</div>
+      <div class="dest-name">Monte Jôf Fuârt</div>
+      <div class="dest-diff">Esperto • 7h • 2666 m</div>
+    </div>
+    <div class="dest-card" onclick="selectDest(this,'Passo Pramollo','Facile • 2.5h • panoramico')">
+      <div class="dest-icon">🌸</div>
+      <div class="dest-name">Passo Pramollo</div>
+      <div class="dest-diff">Facile • 2.5h • panoramico</div>
+    </div>
+  </div>
+
+  <button class="btn-yes" id="btn2" onclick="goToDate()" disabled>Avanti — scegli la data 📅</button>
+</div>
+
+
+<!-- ══════════════════ SCREEN 3 ══════════════════ -->
+<div class="screen" id="s3">
+  <div class="section-title">Quando ci <em>andiamo</em>? 📅</div>
+  <p class="section-sub">Destinazione: <strong id="destLabel" style="color:#e91e8c;"></strong></p>
+
+  <div class="card">
+    <div class="cal-wrapper">
       <div class="cal-header">
-        <button class="cal-nav" onclick="prevMonth()">‹</button>
-        <span class="cal-month-label" id="calMonthLabel"></span>
-        <button class="cal-nav" onclick="nextMonth()">›</button>
+        <button class="cal-nav" id="prevBtn">‹</button>
+        <span class="cal-month" id="calLabel"></span>
+        <button class="cal-nav" id="nextBtn">›</button>
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
-    <div id="selectedDateDisplay" style="font-size:0.9rem; color:#c2185b; min-height:1.4rem; text-align:center;"></div>
-    <button class="btn-yes" id="confirmDateBtn" onclick="goToConfirm()" style="opacity:0.4;pointer-events:none;">Conferma e invia 💌</button>
   </div>
 
-  <div class="screen" id="screen4">
-    <div class="westie-row">
-      <svg width="70" height="70" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="40" cy="62" rx="28" ry="16" fill="#f5f0e8"/>
-        <ellipse cx="40" cy="46" rx="22" ry="20" fill="#fafaf7"/>
-        <ellipse cx="28" cy="30" rx="10" ry="13" fill="#ede8dc"/>
-        <ellipse cx="52" cy="30" rx="10" ry="13" fill="#ede8dc"/>
-        <ellipse cx="34" cy="42" rx="5" ry="6" fill="#333"/>
-        <ellipse cx="46" cy="42" rx="5" ry="6" fill="#333"/>
-        <circle cx="34" cy="40" r="2.5" fill="white"/>
-        <circle cx="46" cy="40" r="2.5" fill="white"/>
-        <ellipse cx="40" cy="51" rx="5.5" ry="3.5" fill="#e8b4b8"/>
-        <path d="M36 52 Q40 57 44 52" stroke="#d4849a" stroke-width="1.5" fill="none"/>
-        <text x="40" y="76" font-size="14" text-anchor="middle">💖</text>
-      </svg>
-    </div>
-    <div class="summary-card">
-      <div class="summary-row">
-        <span class="summary-label">🏔️ Destinazione</span>
-        <span class="summary-value" id="sumDest"></span>
-      </div>
-      <div class="summary-row">
-        <span class="summary-label">📅 Data</span>
-        <span class="summary-value" id="sumDate"></span>
-      </div>
-      <div class="summary-row">
-        <span class="summary-label">🐶 Partecipanti</span>
-        <span class="summary-value">Tu, me e i westie</span>
-      </div>
-      <div class="summary-row">
-        <span class="summary-label">💌 Conferma a</span>
-        <span class="summary-value" style="font-size:0.8rem;">enricomaset.em@gmail.com</span>
-      </div>
-    </div>
-    <div id="mailStatus" class="mail-status mail-sending">
-      <i class="ti ti-send" style="margin-right:6px;"></i>Invio conferma in corso...
-    </div>
-    <div class="result-box" id="finalBox" style="display:none;">
-      <div class="result-title">È ufficiale! 💖</div>
-      <div class="result-sub" id="finalMsg"></div>
-      <div style="margin-top:1rem; font-size:2rem;">🎉💕🏔️🐶</div>
-    </div>
-  </div>
+  <p id="dateDisplay" style="font-size:0.95rem; color:#e91e8c; min-height:1.4rem; text-align:center; font-weight:700;"></p>
+  <button class="btn-yes" id="btn3" onclick="goToConfirm()" disabled>Conferma e invia 💌</button>
 </div>
 
+
+<!-- ══════════════════ SCREEN 4 ══════════════════ -->
+<div class="screen" id="s4">
+
+  <!-- Westie felice piccolo -->
+  <svg width="100" height="110" viewBox="0 0 130 140" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="65" cy="108" rx="40" ry="26" fill="#f0ebe0"/>
+    <rect x="34" y="124" width="14" height="18" rx="7" fill="#e8e0d0"/>
+    <rect x="52" y="126" width="13" height="16" rx="6.5" fill="#e8e0d0"/>
+    <rect x="68" y="126" width="13" height="16" rx="6.5" fill="#e8e0d0"/>
+    <rect x="84" y="124" width="14" height="18" rx="7" fill="#e8e0d0"/>
+    <ellipse cx="65" cy="72" rx="32" ry="30" fill="#f0ebe0"/>
+    <ellipse cx="65" cy="46" rx="30" ry="18" fill="#e8e3d4"/>
+    <ellipse cx="48" cy="50" rx="14" ry="22" fill="#e8e3d4"/>
+    <ellipse cx="82" cy="50" rx="14" ry="22" fill="#e8e3d4"/>
+    <ellipse cx="65" cy="75" rx="26" ry="24" fill="#fafaf5"/>
+    <ellipse cx="48" cy="52" rx="9" ry="16" fill="#ddd8c8"/>
+    <ellipse cx="82" cy="52" rx="9" ry="16" fill="#ddd8c8"/>
+    <ellipse cx="54" cy="70" rx="7" ry="8" fill="#1a1008"/>
+    <ellipse cx="76" cy="70" rx="7" ry="8" fill="#1a1008"/>
+    <circle cx="51" cy="67" r="2.5" fill="white" opacity="0.9"/>
+    <circle cx="73" cy="67" r="2.5" fill="white" opacity="0.9"/>
+    <ellipse cx="65" cy="82" rx="7" ry="5" fill="#1a0808"/>
+    <!-- sorriso grande -->
+    <path d="M54 89 Q65 100 76 89" stroke="#c4849a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="65" cy="97" rx="6" ry="4" fill="#e8748a"/>
+    <path d="M105 100 Q128 80 120 65 Q115 55 108 68" stroke="#e8e3d4" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <rect x="42" y="96" width="46" height="9" rx="4.5" fill="#e91e8c" opacity="0.85"/>
+    <ellipse cx="65" cy="100" rx="5" ry="5" fill="#ffd700" opacity="0.9"/>
+    <text x="63" y="103" font-size="6" fill="#2d1b2e" font-weight="bold">M</text>
+  </svg>
+
+  <div class="card">
+    <div class="summary-row"><span class="slabel">🏔️ Destinazione</span><span class="svalue" id="sumDest"></span></div>
+    <div class="summary-row"><span class="slabel">📅 Data</span><span class="svalue" id="sumDate"></span></div>
+    <div class="summary-row"><span class="slabel">🐾 Con chi</span><span class="svalue">Tu, me e il westie</span></div>
+    <div class="summary-row"><span class="slabel">🍰 Rifornimenti</span><span class="svalue">I tuoi dolci, of course</span></div>
+    <div class="summary-row"><span class="slabel">💌 Conferma a</span><span class="svalue" style="font-size:0.8rem;">enricomaset.em@gmail.com</span></div>
+  </div>
+
+  <div class="status-box status-sending" id="mailStatus">⏳ Invio email in corso...</div>
+
+  <div class="final-box" id="finalBox" style="display:none;">
+    <h2>È ufficiale! 💖</h2>
+    <p id="finalMsg"></p>
+    <div style="font-size:2.2rem; margin-top:1rem;">🎉 🏔️ 🐾 🧁 💕</div>
+  </div>
+
+</div>
+
+</div><!-- /app -->
+
 <script>
- const EMAILJS_PUBLIC_KEY  = "75iHz7PEUZ2RoXcSz";
+/* ══ EMAILJS CONFIG ══ */
+const EMAILJS_PUBLIC_KEY  = "75iHz7PEUZ2RoXcSz";
 const EMAILJS_SERVICE_ID  = "service_8dkeu8m";
 const EMAILJS_TEMPLATE_ID = "template_3b5ahvo";
- emailjs.init(EMAILJS_PUBLIC_KEY);
-const noBtn = document.getElementById('noBtn');
-let noCount = 0;
-const noPhrases = ['No grazie','Forse no','Non credo','Dai smettila','No!','Assolutamente no','Nooo','Lasciami stare','Non me ne parlare','Impossibile','Giammai!'];
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+/* ══ STATE ══ */
 let selectedDest = null, selectedDestInfo = null, selectedDate = null;
 let calYear, calMonth;
+let noCount = 0;
+const noBtn = document.getElementById('noBtn');
+const noPhrases = ['No grazie','Forse no…','Non credo','Dai smettila!','No!','Mai!','Nooo 😭','Non ci penso','Impossibile','Giammai!','…davvero no?'];
 
-function runAway() {
-  noCount++;
-  const container = noBtn.parentElement;
-  const cw = container.offsetWidth, bw = noBtn.offsetWidth, bh = noBtn.offsetHeight;
-  const x = Math.random() * Math.max(0, cw - bw);
-  const y = Math.random() * Math.max(0, container.offsetHeight - bh);
-  noBtn.style.left = x + 'px'; noBtn.style.top = y + 'px';
-  noBtn.style.fontSize = Math.max(0.55, 0.85 - noCount * 0.04) + 'rem';
-  if (noCount < noPhrases.length) noBtn.textContent = noPhrases[noCount];
-  if (noCount >= 10) { noBtn.style.opacity = '0'; noBtn.style.pointerEvents = 'none'; }
-  spawnFloatingHeart(noBtn);
+/* ══ UTILS ══ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function spawnFloatingHeart(el) {
-  const rect = el.getBoundingClientRect();
-  const appRect = document.getElementById('app').getBoundingClientRect();
+function spawnHeart(x, y) {
+  const emojis = ['💕','💖','💗','💓','🌸','✨','🎀','💝'];
   const h = document.createElement('span');
-  h.className = 'floating-heart';
-  h.textContent = ['💕','💖','💗','💓','🌸','✨'][Math.floor(Math.random()*6)];
-  h.style.left = (rect.left - appRect.left + Math.random()*40) + 'px';
-  h.style.top = (rect.top - appRect.top) + 'px';
-  document.getElementById('app').appendChild(h);
+  h.className = 'floating';
+  h.style.left = x + 'px'; h.style.top = y + 'px';
+  h.style.fontSize = (0.9 + Math.random()*0.8) + 'rem';
+  h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  document.body.appendChild(h);
   setTimeout(() => h.remove(), 3100);
 }
 
-function sayYes() {
-  document.getElementById('screen1').classList.remove('active');
-  document.getElementById('screen2').classList.add('active');
-  launchBurstHearts();
-}
-
-function launchBurstHearts() {
-  const emojis = ['💖','💕','💗','💓','🌸','✨','🎀','💝'];
-  for (let i = 0; i < 18; i++) {
+function burst() {
+  const emojis = ['💖','💕','💗','💓','🌸','✨','🎀','💝','🐾','🧁'];
+  for (let i = 0; i < 22; i++) {
     setTimeout(() => {
       const h = document.createElement('span');
-      h.className = 'burst-heart';
+      h.className = 'burst';
       const angle = Math.random() * 2 * Math.PI;
-      const dist = 80 + Math.random() * 160;
+      const dist = 80 + Math.random() * 180;
       h.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
       h.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
-      h.style.left = (30 + Math.random()*40) + '%';
-      h.style.top = (20 + Math.random()*60) + '%';
+      h.style.left = (30 + Math.random()*40) + 'vw';
+      h.style.top = (20 + Math.random()*50) + 'vh';
+      h.style.fontSize = (1 + Math.random()*0.8) + 'rem';
       h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-      document.getElementById('app').appendChild(h);
-      setTimeout(() => h.remove(), 1900);
-    }, i * 70);
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 2000);
+    }, i * 55);
   }
 }
 
-function selectDest(card, name, info, icon) {
+function startRain() {
+  const emojis = ['💖','💗','💓','💕','🌸','✨','💝','🌺','🎀','💞','🐾','🧁'];
+  let n = 0;
+  const iv = setInterval(() => {
+    for (let i = 0; i < 4; i++) {
+      const h = document.createElement('span');
+      h.className = 'falling';
+      h.style.setProperty('--dur', (2.5+Math.random()*2)+'s');
+      h.style.left = Math.random()*96 + 'vw';
+      h.style.top = '-2rem';
+      h.style.fontSize = (0.9+Math.random()*0.8)+'rem';
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 5000);
+    }
+    if (++n > 35) clearInterval(iv);
+  }, 130);
+}
+
+/* ambient */
+setInterval(() => {
+  spawnHeart(Math.random()*window.innerWidth, Math.random()*window.innerHeight*0.8 + window.innerHeight*0.1);
+}, 1200);
+
+/* ══ SCREEN 1 ══ */
+function runAway() {
+  noCount++;
+  const c = noBtn.parentElement;
+  const x = Math.random() * Math.max(0, c.offsetWidth - noBtn.offsetWidth);
+  const y = Math.random() * Math.max(0, c.offsetHeight - noBtn.offsetHeight);
+  noBtn.style.left = x+'px'; noBtn.style.top = y+'px';
+  noBtn.style.fontSize = Math.max(0.5, 0.85 - noCount*0.04)+'rem';
+  if (noCount < noPhrases.length) noBtn.textContent = noPhrases[noCount];
+  if (noCount >= 10) { noBtn.style.opacity='0'; noBtn.style.pointerEvents='none'; }
+  const r = noBtn.getBoundingClientRect();
+  spawnHeart(r.left + Math.random()*r.width, r.top);
+}
+
+function sayYes() { burst(); setTimeout(() => show('s2'), 200); }
+
+/* ══ SCREEN 2 ══ */
+function selectDest(card, name, info) {
   document.querySelectorAll('.dest-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
   selectedDest = name; selectedDestInfo = info;
-  const btn = document.getElementById('nextToDate');
-  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-  launchBurstHearts();
+  document.getElementById('btn2').disabled = false;
+  burst();
 }
 
 function goToDate() {
   if (!selectedDest) return;
-  document.getElementById('screen2').classList.remove('active');
-  document.getElementById('screen3').classList.add('active');
   document.getElementById('destLabel').textContent = selectedDest;
-  const now = new Date();
-  calYear = now.getFullYear(); calMonth = now.getMonth();
-  renderCalendar();
+  const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth();
+  renderCal();
+  show('s3');
 }
 
-function renderCalendar() {
+/* ══ SCREEN 3 — CALENDARIO ══ */
+document.getElementById('prevBtn').addEventListener('click', function() {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal();
+});
+document.getElementById('nextBtn').addEventListener('click', function() {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal();
+});
+
+function renderCal() {
   const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  document.getElementById('calMonthLabel').textContent = months[calMonth] + ' ' + calYear;
+  document.getElementById('calLabel').textContent = months[calMonth] + ' ' + calYear;
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
-  const days = ['Lu','Ma','Me','Gi','Ve','Sa','Do'];
-  days.forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el); });
+  ['Lu','Ma','Me','Gi','Ve','Sa','Do'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-dname'; el.textContent = d; grid.appendChild(el);
+  });
   const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const offset = (firstDay === 0) ? 6 : firstDay - 1;
-  for (let i = 0; i < offset; i++) { const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el); }
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  for (let i = 0; i < offset; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  const total = new Date(calYear, calMonth+1, 0).getDate();
   const today = new Date(); today.setHours(0,0,0,0);
-  for (let d = 1; d <= daysInMonth; d++) {
-    const el = document.createElement('div');
-    el.className = 'cal-day';
-    el.textContent = d;
+  for (let d = 1; d <= total; d++) {
+    const el = document.createElement('div'); el.className = 'cal-day'; el.textContent = d;
     const thisDate = new Date(calYear, calMonth, d);
-    if (thisDate < today) { el.classList.add('past'); }
-    else {
-      if (selectedDate && selectedDate.getFullYear()===calYear && selectedDate.getMonth()===calMonth && selectedDate.getDate()===d) el.classList.add('selected');
-      if (thisDate.toDateString()===today.toDateString()) el.classList.add('today');
-      el.onclick = () => pickDay(d, thisDate);
+    if (thisDate < today) {
+      el.classList.add('past');
+    } else {
+      if (selectedDate && selectedDate.toDateString() === thisDate.toDateString()) el.classList.add('selected');
+      if (thisDate.toDateString() === today.toDateString()) el.classList.add('today');
+      el.addEventListener('click', function() { pickDay(new Date(calYear, calMonth, d)); });
     }
     grid.appendChild(el);
   }
 }
 
-function pickDay(d, dateObj) {
-  selectedDate = dateObj;
-  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-  const label = dateObj.toLocaleDateString('it-IT', opts);
-  document.getElementById('selectedDateDisplay').textContent = '📅 ' + label.charAt(0).toUpperCase() + label.slice(1);
-  const btn = document.getElementById('confirmDateBtn');
-  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-  renderCalendar();
-  launchBurstHearts();
+function pickDay(date) {
+  selectedDate = date;
+  const label = date.toLocaleDateString('it-IT', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('dateDisplay').textContent = '📅 ' + label.charAt(0).toUpperCase() + label.slice(1);
+  document.getElementById('btn3').disabled = false;
+  renderCal();
+  burst();
 }
 
-function prevMonth() {
-  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
-}
-function nextMonth() {
-  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
-}
-
+/* ══ SCREEN 4 ══ */
 function goToConfirm() {
   if (!selectedDate) return;
-  document.getElementById('screen3').classList.remove('active');
-  document.getElementById('screen4').classList.add('active');
-  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-  const dateLabel = selectedDate.toLocaleDateString('it-IT', opts);
+  const dateLabel = selectedDate.toLocaleDateString('it-IT', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const dateFmt = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
   document.getElementById('sumDest').textContent = selectedDest;
-  document.getElementById('sumDate').textContent = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
-  document.getElementById('finalMsg').textContent = selectedDest + ' il ' + dateLabel + ' — non vedo l\'ora! 💕';
-  sendEmail(dateLabel);
-  startHeartRain();
+  document.getElementById('sumDate').textContent = dateFmt;
+  document.getElementById('finalMsg').textContent = selectedDest + ' • ' + dateFmt;
+  show('s4');
+  startRain();
+  sendEmail(dateFmt);
 }
 
-async function sendEmail(dateLabel) {
-  const subject = encodeURIComponent('💖 Melissa ha detto SÌ! Trekking confermato 🏔️');
-  const body = encodeURIComponent(
-    'Ciao Enrico! 🎉\n\n' +
-    'Melissa ha accettato il tuo invito in montagna!\n\n' +
-    '🏔️ Destinazione: ' + selectedDest + '\n' +
-    '📅 Data: ' + dateLabel + '\n' +
-    '🐶 Partecipanti: Enrico, Melissa e i westie\n\n' +
-    'Preparate gli zaini, è tutto confermato! 💕\n\n' +
-    '— Il vostro pianificatore di avventure romantiche 🌸'
-  );
-  const mailtoLink = 'mailto:enricomaset.em@gmail.com?subject=' + subject + '&body=' + body;
-
-  try {
-    const statusEl = document.getElementById('mailStatus');
-    statusEl.className = 'mail-status mail-sending';
-    statusEl.innerHTML = '<i class="ti ti-send" style="margin-right:6px;"></i>Apertura client email...';
-
-    await new Promise(r => setTimeout(r, 1200));
-
-    window.location.href = mailtoLink;
-
-    await new Promise(r => setTimeout(r, 800));
-    statusEl.className = 'mail-status mail-sent';
-    statusEl.innerHTML = '<i class="ti ti-check" style="margin-right:6px;"></i>Conferma pronta! Controlla il tuo client email 📬';
-    document.getElementById('finalBox').style.display = 'block';
-  } catch(e) {
-    const statusEl = document.getElementById('mailStatus');
-    statusEl.className = 'mail-status mail-error';
-    statusEl.innerHTML = '<i class="ti ti-alert-circle" style="margin-right:6px;"></i>Errore — riprova o manda tu la mail!';
-  }
+function sendEmail(dateLabel) {
+  const params = {
+    to_email:      'enricomaset.em@gmail.com',
+    destinazione:  selectedDest,
+    data_trekking: dateLabel,
+    dettagli:      selectedDestInfo
+  };
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+    .then(() => {
+      const el = document.getElementById('mailStatus');
+      el.className = 'status-box status-ok';
+      el.textContent = '✅ Email inviata con successo a enricomaset.em@gmail.com!';
+      document.getElementById('finalBox').style.display = 'block';
+    })
+    .catch(err => {
+      const el = document.getElementById('mailStatus');
+      el.className = 'status-box status-err';
+      el.textContent = '❌ Errore: ' + (err.text || JSON.stringify(err));
+      console.error(err);
+    });
 }
-
-function startHeartRain() {
-  const emojis = ['💖','💗','💓','💕','🌸','✨','💝','🌺','🎀','💞'];
-  let count = 0;
-  const interval = setInterval(() => {
-    for (let i = 0; i < 3; i++) {
-      const h = document.createElement('span');
-      h.className = 'fall-heart';
-      h.style.left = Math.random()*95 + '%';
-      h.style.top = '-1.5rem';
-      h.style.animationDuration = (2.5 + Math.random()*2) + 's';
-      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-      document.getElementById('app').appendChild(h);
-      setTimeout(() => h.remove(), 5000);
-    }
-    count++;
-    if (count > 30) clearInterval(interval);
-  }, 150);
-}
-
-setInterval(() => {
-  const h = document.createElement('span');
-  h.className = 'floating-heart';
-  h.textContent = ['💕','💖','🌸','✨'][Math.floor(Math.random()*4)];
-  h.style.left = Math.random()*90 + '%';
-  h.style.top = (60 + Math.random()*30) + '%';
-  h.style.fontSize = (0.7 + Math.random()*0.6) + 'rem';
-  h.style.opacity = '0.45';
-  document.getElementById('app').appendChild(h);
-  setTimeout(() => h.remove(), 3100);
-}, 900);
 </script>
+</body>
+</html>
